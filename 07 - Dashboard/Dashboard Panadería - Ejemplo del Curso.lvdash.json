@@ -1,0 +1,641 @@
+{
+  "datasets": [
+    {
+      "name": "ventas_dia_semana",
+      "displayName": "Ventas por Día de la Semana",
+      "queryLines": [
+        "SELECT\n",
+        "  dia_semana,\n",
+        "  COUNT(*) AS transacciones,\n",
+        "  ROUND(SUM(total), 0) AS total_ventas\n",
+        "FROM\n",
+        "  workspace.panaderia.ventas\n",
+        "GROUP BY\n",
+        "  dia_semana\n",
+        "ORDER BY\n",
+        "  total_ventas DESC"
+      ]
+    },
+    {
+      "name": "ventas_sucursal",
+      "displayName": "Ventas por Sucursal",
+      "queryLines": [
+        "SELECT\n",
+        "  s.nombre AS sucursal,\n",
+        "  COUNT(v.venta_id) AS transacciones,\n",
+        "  ROUND(SUM(v.total), 0) AS total_ventas\n",
+        "FROM\n",
+        "  workspace.panaderia.ventas v\n",
+        "    JOIN workspace.panaderia.sucursales s\n",
+        "      ON v.sucursal_id = s.sucursal_id\n",
+        "GROUP BY\n",
+        "  s.nombre\n",
+        "ORDER BY\n",
+        "  total_ventas DESC"
+      ]
+    },
+    {
+      "name": "kpis_principales",
+      "displayName": "KPIs Principales",
+      "queryLines": [
+        "SELECT\n",
+        "  COUNT(*) AS total_transacciones,\n",
+        "  ROUND(SUM(total), 0) AS total_facturacion,\n",
+        "  ROUND(AVG(total), 0) AS ticket_promedio,\n",
+        "  COUNT(DISTINCT cliente_id) AS clientes_unicos\n",
+        "FROM\n",
+        "  workspace.panaderia.ventas"
+      ]
+    },
+    {
+      "name": "top_productos",
+      "displayName": "Top 10 Productos",
+      "queryLines": [
+        "SELECT\n",
+        "  p.nombre AS producto,\n",
+        "  p.categoria,\n",
+        "  SUM(d.cantidad) AS unidades_vendidas,\n",
+        "  ROUND(SUM(d.subtotal), 0) AS ingresos\n",
+        "FROM\n",
+        "  workspace.panaderia.detalles_ventas d\n",
+        "    JOIN workspace.panaderia.productos p\n",
+        "      ON d.producto_id = p.producto_id\n",
+        "GROUP BY\n",
+        "  p.nombre,\n",
+        "  p.categoria\n",
+        "ORDER BY\n",
+        "  unidades_vendidas DESC\n",
+        "LIMIT 10"
+      ]
+    },
+    {
+      "name": "ventas_mensuales",
+      "displayName": "Ventas Mensuales",
+      "queryLines": [
+        "SELECT\n",
+        "  DATE_FORMAT(fecha, 'yyyy-MM') AS mes,\n",
+        "  COUNT(*) AS transacciones,\n",
+        "  ROUND(SUM(total), 0) AS total_ventas\n",
+        "FROM\n",
+        "  workspace.panaderia.ventas\n",
+        "GROUP BY\n",
+        "  DATE_FORMAT(fecha, 'yyyy-MM')\n",
+        "ORDER BY\n",
+        "  mes"
+      ]
+    },
+    {
+      "name": "ingresos_categoria",
+      "displayName": "Ingresos por Categoría",
+      "queryLines": [
+        "SELECT\n",
+        "  p.categoria,\n",
+        "  SUM(d.cantidad) AS unidades_vendidas,\n",
+        "  ROUND(SUM(d.subtotal), 0) AS ingresos\n",
+        "FROM\n",
+        "  workspace.panaderia.detalles_ventas d\n",
+        "    JOIN workspace.panaderia.productos p\n",
+        "      ON d.producto_id = p.producto_id\n",
+        "GROUP BY\n",
+        "  p.categoria\n",
+        "ORDER BY\n",
+        "  ingresos DESC"
+      ]
+    }
+  ],
+  "pages": [
+    {
+      "name": "e2be1ab3",
+      "displayName": "Page 1",
+      "layout": [
+        {
+          "widget": {
+            "name": "counter_facturacion",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "kpis_principales",
+                  "fields": [
+                    {
+                      "name": "sum(total_facturacion)",
+                      "expression": "SUM(`total_facturacion`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": {
+                  "value": "Total Facturación",
+                  "fields": []
+                }
+              },
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "sum(total_facturacion)",
+                  "rowNumber": 0
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 3,
+            "width": 3,
+            "height": 4
+          }
+        },
+        {
+          "widget": {
+            "name": "counter_transacciones",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "kpis_principales",
+                  "fields": [
+                    {
+                      "name": "sum(total_transacciones)",
+                      "expression": "SUM(`total_transacciones`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": {
+                  "value": "Total Transacciones",
+                  "fields": []
+                }
+              },
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "sum(total_transacciones)",
+                  "rowNumber": 0
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 3,
+            "y": 3,
+            "width": 3,
+            "height": 4
+          }
+        },
+        {
+          "widget": {
+            "name": "counter_ticket",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "kpis_principales",
+                  "fields": [
+                    {
+                      "name": "sum(ticket_promedio)",
+                      "expression": "SUM(`ticket_promedio`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": {
+                  "value": "Ticket Promedio",
+                  "fields": []
+                }
+              },
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "sum(ticket_promedio)",
+                  "rowNumber": 0
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 6,
+            "y": 3,
+            "width": 3,
+            "height": 4
+          }
+        },
+        {
+          "widget": {
+            "name": "counter_clientes",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "kpis_principales",
+                  "fields": [
+                    {
+                      "name": "sum(clientes_unicos)",
+                      "expression": "SUM(`clientes_unicos`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": {
+                  "value": "Clientes Únicos",
+                  "fields": []
+                }
+              },
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "sum(clientes_unicos)",
+                  "rowNumber": 0
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 9,
+            "y": 3,
+            "width": 3,
+            "height": 4
+          }
+        },
+        {
+          "widget": {
+            "name": "bar_sucursal",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ventas_sucursal",
+                  "fields": [
+                    {
+                      "name": "sucursal",
+                      "expression": "`sucursal`"
+                    },
+                    {
+                      "name": "sum(total_ventas)",
+                      "expression": "SUM(`total_ventas`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "Ventas por Sucursal"
+              },
+              "version": 3,
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "sucursal",
+                  "displayName": "sucursal",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                },
+                "y": {
+                  "fieldName": "sum(total_ventas)",
+                  "displayName": "total_ventas",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "color": {
+                  "fieldName": "sucursal",
+                  "displayName": "sucursal",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 7,
+            "width": 6,
+            "height": 7
+          }
+        },
+        {
+          "widget": {
+            "name": "bar_categoria",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ingresos_categoria",
+                  "fields": [
+                    {
+                      "name": "categoria",
+                      "expression": "`categoria`"
+                    },
+                    {
+                      "name": "sum(ingresos)",
+                      "expression": "SUM(`ingresos`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "Ingresos por Categoría"
+              },
+              "version": 3,
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "categoria",
+                  "displayName": "categoria",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                },
+                "y": {
+                  "fieldName": "sum(ingresos)",
+                  "displayName": "ingresos",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "color": {
+                  "fieldName": "categoria",
+                  "displayName": "categoria",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 6,
+            "y": 7,
+            "width": 6,
+            "height": 7
+          }
+        },
+        {
+          "widget": {
+            "name": "line_mensual",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ventas_mensuales",
+                  "fields": [
+                    {
+                      "name": "mes",
+                      "expression": "`mes`"
+                    },
+                    {
+                      "name": "sum(total_ventas)",
+                      "expression": "SUM(`total_ventas`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": {
+                  "value": "Ventas Mensuales",
+                  "fields": []
+                }
+              },
+              "version": 3,
+              "widgetType": "line",
+              "encodings": {
+                "x": {
+                  "fieldName": "mes",
+                  "displayName": "mes",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                },
+                "y": {
+                  "fieldName": "sum(total_ventas)",
+                  "displayName": "total_ventas",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 14,
+            "width": 12,
+            "height": 7
+          }
+        },
+        {
+          "widget": {
+            "name": "bar_top_productos",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "top_productos",
+                  "fields": [
+                    {
+                      "name": "categoria",
+                      "expression": "`categoria`"
+                    },
+                    {
+                      "name": "producto",
+                      "expression": "`producto`"
+                    },
+                    {
+                      "name": "sum(unidades_vendidas)",
+                      "expression": "SUM(`unidades_vendidas`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": {
+                  "value": "Top 10 Productos",
+                  "fields": []
+                }
+              },
+              "version": 3,
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "producto",
+                  "displayName": "producto",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                },
+                "y": {
+                  "fieldName": "sum(unidades_vendidas)",
+                  "displayName": "unidades_vendidas",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "color": {
+                  "fieldName": "categoria",
+                  "displayName": "categoria",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 21,
+            "width": 6,
+            "height": 7
+          }
+        },
+        {
+          "widget": {
+            "name": "pie_dia_semana",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ventas_dia_semana",
+                  "fields": [
+                    {
+                      "name": "sum(total_ventas)",
+                      "expression": "SUM(`total_ventas`)"
+                    },
+                    {
+                      "name": "dia_semana",
+                      "expression": "`dia_semana`"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "Ventas por Día de la Semana"
+              },
+              "version": 3,
+              "widgetType": "pie",
+              "encodings": {
+                "angle": {
+                  "fieldName": "sum(total_ventas)",
+                  "scale": {
+                    "type": "quantitative"
+                  },
+                  "displayName": "total_ventas"
+                },
+                "color": {
+                  "fieldName": "dia_semana",
+                  "displayName": "dia_semana",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 6,
+            "y": 21,
+            "width": 6,
+            "height": 7
+          }
+        },
+        {
+          "widget": {
+            "name": "header_title",
+            "multilineTextboxSpec": {
+              "lines": [
+                "# Dashboard Panadería - Ejemplo del Curso\n",
+                "## Laboratorio (Herramientas) - Universidad del Aconcagua\n",
+                "\n",
+                "Dashboard de ejemplo del curso que muestra KPIs principales, análisis por sucursal, top productos, tendencias mensuales y patrones por día de la semana. Los datos provienen de 5 tablas en Unity Catalog (workspace.panaderia.*) con 170,000+ registros de ventas de panadería."
+              ]
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 0,
+            "width": 12,
+            "height": 3
+          }
+        }
+      ],
+      "pageType": "PAGE_TYPE_CANVAS",
+      "layoutVersion": "GRID_V1"
+    }
+  ],
+  "uiSettings": {
+    "theme": {
+      "widgetHeaderAlignment": "ALIGNMENT_UNSPECIFIED"
+    },
+    "applyModeEnabled": false
+  }
+}
